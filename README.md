@@ -3,7 +3,7 @@
 ##Overview
 Rshell is a program that peforms the following steps:
 
-1. Print a command prompt which include loginname, hostname, and "%%"
+1. Print a command prompt which include loginname, hostname, and "$$"
 2. Read in a command on one line that can have multiple commands separated by ;, || or &&
 3. Execute each command in the command string.  Exit is the command to exit rshell
 
@@ -16,18 +16,18 @@ Aaron Nguyen
 
 ##File List
 
-LICENSE
-makefile
-README.md
+LICENSE  
+makefile  
+README.md  
 
-./src:
-rshell.cpp
+./src:  
+rshell.cpp  
 
-./tests:
-single_command.sh
-multi_command.sh
-commented_command.sh
-exit.sh
+./tests:  
+single_command.sh  
+multi_command.sh  
+commented_command.sh  
+exit.sh  
 
 
 ##How to run rhell
