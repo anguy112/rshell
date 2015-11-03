@@ -8,12 +8,13 @@ FLAGS = -Wall -Werror -ansi -pedantic
 #Targets
 
 all:
-  mkdir bin
+	mkdir bin
 	$(COMPILE) $(FLAGS) ./src/rshell.cpp -o ./bin/rshell
 
-rshell
-  mkdir bin
+rshell:
+	mkdir bin
 	$(COMPILE) $(FLAGS) ./src/rshell.cpp -o ./bin/rshell
-	
+
+
 clean:
 	rm -rf bin
