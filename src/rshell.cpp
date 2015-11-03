@@ -1,3 +1,13 @@
+//  =============== BEGIN ASSESSMENT HEADER ================
+/// file rshell.cpp
+///
+/// author Aaron Nguyen [anguy112@ucr.edu]
+/// SID:861106832
+/// date November 3, 2015
+//
+//  ================== END ASSESSMENT HEADER ===============
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
