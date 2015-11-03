@@ -4,8 +4,11 @@
 Rshell is a program that peforms the following steps:
 
 1. Print a command prompt which include loginname, hostname, and "$$"
-2. Read in a command on one line that can have multiple commands separated by ;, || or &&
-3. Execute each command in the command string.  Exit is the command to exit rshell
+2. Read in a command on one line. Commands will have the form:
+	cmd = executable [ argumentList ] [ connector cmd ]
+	connector = || or && or ;
+
+3. Execute each command in the command string.  Exit rshell with exit command
 
 
 ##Licensing information: See LICENSE
