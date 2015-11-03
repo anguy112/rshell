@@ -7,12 +7,14 @@ FLAGS = -Wall -Werror -ansi -pedantic
 
 #Targets
 
-all: rshell.cpp
-	$(COMPILE) $(FLAGS) -o rshell.out rshell.cpp
+all:
+	mkdir bin
+	$(COMPILE) $(FLAGS) ./src/rshell.cpp -o ./bin/rshell
 
 rshell: rshell.cpp
-	$(COMPILE) $(FLAGS) -o rshell.out rshell.cpp
+	$(COMPILE) $(FLAGS) ./src/rshell.cpp -o ./bin/rshellt rshell.cpp
+
 
 clean:
-	rm -rf *~ *.o rshell.out
+	rm -rf ./bin
 
