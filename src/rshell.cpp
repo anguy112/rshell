@@ -65,11 +65,15 @@ void cmd_parsing (char * inputStr, char ** command){
         if (inputStr[i]==';'){
             semiFound = true;
         }
-        
+	// reset semiFound for the next command
+	if ((inputStr[i]!='\0') && semiFound) {
+            semiFound = false;
+        }        
         if (inputStr[i]=='#'){
              commentFound = true;
         }
-            
+
+ 	// put NULL to the rest of the string if comment found     
         if (commentFound){
             inputStr[i]='\0';
         }
