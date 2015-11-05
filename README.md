@@ -42,8 +42,8 @@ exit.sh
 
 ##Bugs
 
-* when a command is failed to execute, the exit command does not exit rshell completely.
-* Exit command after a previous failed command also causes extra commands (from previous input string)
+* After a command fails to execute, the exit command does not exit rshell properly.  An additional exit command is required to exit rshell. 
+* The "&&" connector function does not work properly after a failed command. After the exit command is entered, the command that is not supposed to execute is executed before exiting rshell.
 
 
 
