@@ -8,17 +8,27 @@
 (
 echo "ls -a"
 
+echo "ls -a;"
+
+echo "ls -a ;"
+
 echo "ls -al"
 
 echo "echo hello"
 
+echo "echo hello world"
+
 echo "mkdir test"
 
-echo "ls "
+echo "ls"
 
 echo "rmdir test ;"
 
 echo "ls;"
+
+echo "pwb"  #bad command
+
+echo "pwd"
 
 echo "exit"
 ) | ../bin/rshell

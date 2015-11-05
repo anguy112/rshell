@@ -15,9 +15,21 @@ echo "ls ; #echo hello || mkdir test || echo world;"
 
 echo "ls ; # echo hello;"
 
-echo "echo hello # echo wotld"
+echo "echo hello # echo world"
 
 echo "#"
+
+echo "##"
+
+echo "#;"
+
+echo "#||"
+
+echo "#&&"
+
+echo "#echo hello # echo world"
+
+echo "######echo hello # echo world"
 
 echo "exit"
 
