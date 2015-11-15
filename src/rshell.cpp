@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <sys/wait.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 using namespace std;
 
@@ -61,15 +63,17 @@ void cmd_parsing (char * inputStr, char ** command){
     // if # is found, replace it with semi colon and null until the end of commandL
     for (unsigned i=0; i < strlen(inputStr); i++)
     {
-        
+ 
         if (inputStr[i]==';'){
             semiFound = true;
         }
-	// reset semiFound for the next command
-	if ((inputStr[i]!='\0') && semiFound) {
+        // clear semiFound for next command
+        else if ((inputStr[i]!='\0') && (inputStr[i]!=' ') && semiFound)
+        {
             semiFound = false;
-        }        
-        if (inputStr[i]=='#'){
+        }
+
+       if (inputStr[i]=='#'){
              commentFound = true;
         }
 
@@ -78,7 +82,6 @@ void cmd_parsing (char * inputStr, char ** command){
             inputStr[i]='\0';
         }
         
-
     }
 
     // if semi colon is not found, put it at the end
@@ -86,7 +89,6 @@ void cmd_parsing (char * inputStr, char ** command){
     {
         strncat(inputStr, ";", 1);     // add semi-colon
     }
-
 
     // format input string so that a space is always before and after the semicolon
     int inputLen = strlen(inputStr);
@@ -138,6 +140,85 @@ void cmd_parsing (char * inputStr, char ** command){
 
 
 }
+
+
+// this function implements the test command
+void test_cmd(char **args)
+{
+   
+    struct stat sb;
+    char * pathName;
+                
+    if (strstr(args[1],"-") != NULL) {
+                
+        //flag followed by test so pathName is in third position 
+        pathName = args[2];
+    }
+    else 
+    {
+        //no flag followed by test so pathName is in second position 
+        pathName = args[1];
+    }
+                
+    //cout << pathName << endl;
+
+    // check if file/directopry exist and regular
+    if (strstr(args[1],"f") != NULL)
+    {
+        if(stat(pathName, &sb)==-1)
+        {
+            perror("stat");
+        }
+        else
+        {
+            if (S_ISREG(sb.st_mode))
+            {
+                cout << "path is a regular file" << endl;
+            }
+            else
+            {
+                cout << "path is not a regular file" << endl;   
+            }
+        }
+
+    }
+                
+    // check if file/directopry exist and is directory
+    else if (strstr(args[1],"d") != NULL)
+    {
+        
+        if(stat(pathName, &sb)==-1)
+        {
+            perror("stat");
+        }
+        else
+        {
+            if (S_ISDIR(sb.st_mode))
+            {
+                cout << "path is a directory" << endl;
+            }
+            else
+            {
+                cout << "path is not a directory" << endl;   
+            }
+        }
+                        
+    }
+    // check if file/directopry exist
+    else
+    {
+        if(stat(pathName, &sb)==-1)
+        {
+            perror("stat");
+        }
+        else
+        {
+            cout << "path exists" << endl;
+        }
+                    
+    }
+}
+
 
 
 // this fuction perform the command using fork, execvp and return the status
@@ -238,7 +319,12 @@ void run_cmd(char ** command, char ** args){
             // the return status=0 means fail
             if (go == 1){
                 status = run_exec(args);
-            }
+
+                // check for test command
+                if ((strstr(args[0],"test") != NULL) || (strstr(args[0],"[") != NULL)){
+                    test_cmd(args);
+                }            
+	    }
             
             
             // generate go for next command
