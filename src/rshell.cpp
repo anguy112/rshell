@@ -63,6 +63,11 @@ void cmd_parsing (char * inputStr, char ** command){
     // if # is found, replace it with semi colon and null until the end of commandL
     for (unsigned i=0; i < strlen(inputStr); i++)
     {
+
+        // remove ';' if it's follwed by ')'
+        if (i!=(strlen(inputStr)-1) && inputStr[i]==';' && inputStr[i+1]==')' ){
+            inputStr[i]= ' ';
+        }
  
         if (inputStr[i]==';'){
             semiFound = true;
@@ -95,7 +100,7 @@ void cmd_parsing (char * inputStr, char ** command){
     for (int i=0; i < inputLen; i++)
     {
             //cout << "input " << inputStr[i] << endl;
-            if (inputStr[i]==';')
+            if ((inputStr[i]==';') || (inputStr[i]=='(') || (inputStr[i]==')'))
             {
                 int foundIndex=i;
                 
@@ -143,7 +148,7 @@ void cmd_parsing (char * inputStr, char ** command){
 
 
 // this function implements the test command
-void test_cmd(char **args)
+bool test_cmd(char **args)
 {
    
     struct stat sb;
@@ -168,16 +173,17 @@ void test_cmd(char **args)
         if(stat(pathName, &sb)==-1)
         {
             perror("stat");
+            return false;
         }
         else
         {
             if (S_ISREG(sb.st_mode))
             {
-                cout << "path is a regular file" << endl;
+                return true;;
             }
             else
             {
-                cout << "path is not a regular file" << endl;   
+                return false;   
             }
         }
 
@@ -190,16 +196,17 @@ void test_cmd(char **args)
         if(stat(pathName, &sb)==-1)
         {
             perror("stat");
+            return false;
         }
         else
         {
             if (S_ISDIR(sb.st_mode))
             {
-                cout << "path is a directory" << endl;
+                return true;
             }
             else
             {
-                cout << "path is not a directory" << endl;   
+                return false;;   
             }
         }
                         
@@ -210,10 +217,11 @@ void test_cmd(char **args)
         if(stat(pathName, &sb)==-1)
         {
             perror("stat");
+            return false;
         }
         else
         {
-            cout << "path exists" << endl;
+            return true;
         }
                     
     }
@@ -243,7 +251,8 @@ int run_exec (char ** args){
         if (execvp(args[0], args)==-1)      // execvp fails, bad command
         {
             execStatus=0;
-            perror("execvp"); 
+            perror("execvp");
+            exit (EXIT_FAILURE); 
         }
     
     }
@@ -269,6 +278,11 @@ void run_cmd(char ** command, char ** args){
     int status = 1;
     int go =1;
     int cmdIndex =0;
+    bool test_status = true;
+    bool open_parenthesis = false;
+    bool precedence = false;
+    bool precedence_fail = false;
+    bool precedence_nogo = false;
     
     
     for (int j=0; j < max_cmd_len; j++){
@@ -295,12 +309,18 @@ void run_cmd(char ** command, char ** args){
             exit(0);
      }
 
+        if (strstr(command[i],"(") != NULL){
+            cmdIndex++;                                // skip copying the open parenthesis
+            precedence = true;
+            open_parenthesis = true;
+        }
+
 
      	// copy each command in the command array to argv array
      	// each command is separated by the connector so copy from the start of
      	// command until the connector is detected. 
         if ( (strstr(command[i],";") != NULL) || (strstr(command[i],"&&") != NULL) ||
-             (strstr(command[i],"||") != NULL) )
+             (strstr(command[i],"||") != NULL) || (strstr(command[i],")") != NULL))
         {
             int connectorIndex=i;
         
@@ -315,28 +335,60 @@ void run_cmd(char ** command, char ** args){
                 args[j] = NULL;
             }
 
+
+            // set go/no go if precedence
+            if (open_parenthesis && !go){
+                precedence_nogo = true;
+            }
+            
+            // clear open_parenthesis flag
+            open_parenthesis = false;
+
+
             // then execute the args array if go=1
             // the return status=0 means fail
-            if (go == 1){
+            if (go == 1 && !precedence_nogo){
                 status = run_exec(args);
 
                 // check for test command
                 if ((strstr(args[0],"test") != NULL) || (strstr(args[0],"[") != NULL)){
-                    test_cmd(args);
+                    test_status = test_cmd(args);
                 }            
 	    }
+
+
+            // go to next command index if close parenthesis
+            // this will skip the ")" and point to the connector of next command
+            // also clear precedense_nogo flag
+            if (strstr(command[i],")") != NULL){
+                precedence_nogo = false;
+                precedence = false;
+                connectorIndex++;
+                i++;
+            }
             
-            
+        
+            //any command failed inside the parenthesis will set precedence_fail
+            if (precedence){
+                if (!status) 
+                    precedence_fail = true;
+            }
+
+
             // generate go for next command
             if (strstr(command[i],";") != NULL){
                 go = 1;
             }
             else if (strstr(command[i],"&&") != NULL){
-                go = status;    // go if command successful
+                go = status && test_status && !precedence_fail;    // go if command successful
             }
             else if (strstr(command[i],"||") != NULL){
-                go = !status;    // go if command fail
+                go = !status || !test_status || precedence_fail;    // go if command fail
 	    }
+
+            // clear precedence_fail flag after setting go flag
+            precedence_fail = false;
+
 
             cmdIndex = connectorIndex +1;		//index of the start of next command
             for (int j=0; j < max_cmd_len; j++){
