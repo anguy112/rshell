@@ -28,11 +28,16 @@ rshell.cpp
 
 ./tests:  
 single_command.sh  
+
 multi_command.sh  
+
 commented_command.sh  
+
 exit.sh 
-test_command.sh 
-precedence_command.sh 
+
+test_command.sh  
+
+precedence_command.sh  
   
 
 
