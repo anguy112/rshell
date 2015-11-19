@@ -141,12 +141,17 @@ void cmd_parsing (char * inputStr, char ** command){
         str = strtok (NULL, " ");
         cmdLast = i;
     }
-
+    
+    // clead cmdLast if empty string
+    if (strlen(inputStr)== 0)
+       {
+	cmdLast = 0;
+       }
+     
     // fill the remaining command array with NULL
     for(int i=cmdLast; i < max_cmd_len; i++){
         command[i] = NULL;
     }
-    
 
 
 }
@@ -267,8 +272,15 @@ int run_exec (char ** args){
         perror("wait");
         exit(1);
         }
+        
+	if( WIFSIGNALED(status))
+        {
+        perror("kill");
+        exit(1);   
+        }
+        
         return status; 
-   
+       
     }
     return execStatus;
     
@@ -309,10 +321,11 @@ void run_cmd(char ** command, char ** args){
             }
             
             if (kill(getppid(),SIGKILL) == -1)      //
-                perror("kill");
-                
-            //exit(0);
-     }
+            {   
+		perror("kill");
+            	exit(1);
+	    }
+	}
 
         if (strstr(command[i],"(") != NULL){
             cmdIndex++;                                // skip copying the open parenthesis
@@ -349,8 +362,13 @@ void run_cmd(char ** command, char ** args){
             // clear open_parenthesis flag
             open_parenthesis = false;
 
-
-            // then execute the args array if go=1
+            // display command command array
+	    //for (unsigned k=0; command[k]!=NULL; k++)
+            //{
+            //    cout << " command " << command[k] << endl;
+            //} 
+            
+	    // then execute the args array if go=1
             // the return status=0 means fail
             if (go == 1 && !precedence_nogo){
                 status = run_exec(args);
