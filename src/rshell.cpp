@@ -60,10 +60,24 @@ void cmd_parsing (char * inputStr, char ** command){
     bool commentFound=false;
     bool semiFound=false;
 
-    // if # is found, replace it with semi colon and null until the end of commandL
+
+    // process string if comment found 
     for (unsigned i=0; i < strlen(inputStr); i++)
     {
+        if (inputStr[i]=='#'){
+             commentFound = true;
+        }
 
+    // put NULL to the rest of the string if comment found
+        if (commentFound){
+            inputStr[i]='\0';
+        }
+        
+    }
+
+    // insert semicolon at the end of string if not found
+    for (unsigned i=0; i < strlen(inputStr); i++)
+    {
         // remove ';' if it's follwed by ')'
         if (i!=(strlen(inputStr)-1) && inputStr[i]==';' && inputStr[i+1]==')' ){
             inputStr[i]= ' ';
@@ -78,15 +92,6 @@ void cmd_parsing (char * inputStr, char ** command){
             semiFound = false;
         }
 
-       if (inputStr[i]=='#'){
-             commentFound = true;
-        }
-
- 	// put NULL to the rest of the string if comment found     
-        if (commentFound){
-            inputStr[i]='\0';
-        }
-        
     }
 
     // if semi colon is not found, put it at the end
@@ -230,16 +235,16 @@ bool test_cmd(char **args)
 
 
 // this fuction perform the command using fork, execvp and return the status
-// status=1 -> success, status=0 -> fail
+// status=0 -> success, status>0,status=-1 -> fail
 
 int run_exec (char ** args){
     
     pid_t child_pid, pid;
     int status;
-    int execStatus=1;
 
     child_pid = fork();
-  
+    int execStatus=0; 
+ 
     if ( child_pid < 0)
     {
         perror("fork failed");
@@ -250,9 +255,8 @@ int run_exec (char ** args){
     {
         if (execvp(args[0], args)==-1)      // execvp fails, bad command
         {
-            execStatus=0;
+            execStatus=-1;
             perror("execvp");
-            exit (EXIT_FAILURE); 
         }
     
     }
@@ -263,7 +267,8 @@ int run_exec (char ** args){
         perror("wait");
         exit(1);
         }
-    
+        return status; 
+   
     }
     return execStatus;
     
@@ -303,10 +308,10 @@ void run_cmd(char ** command, char ** args){
                 command[i] = NULL;
             }
             
-            //if (kill(getppid(),SIGKILL) == -1)      //
-            //    perror("kill");
+            if (kill(getppid(),SIGKILL) == -1)      //
+                perror("kill");
                 
-            exit(0);
+            //exit(0);
      }
 
         if (strstr(command[i],"(") != NULL){
@@ -370,7 +375,7 @@ void run_cmd(char ** command, char ** args){
         
             //any command failed inside the parenthesis will set precedence_fail
             if (precedence){
-                if (!status) 
+                if (status != 0) 
                     precedence_fail = true;
             }
 
@@ -380,15 +385,21 @@ void run_cmd(char ** command, char ** args){
                 go = 1;
             }
             else if (strstr(command[i],"&&") != NULL){
-                go = status && test_status && !precedence_fail;    // go if command successful
-            }
+                if (status==0 && test_status==true && precedence_fail==false)    // go if command successful            
+                    go = 1;
+                else
+                    go = 0;
+            } 
             else if (strstr(command[i],"||") != NULL){
-                go = !status || !test_status || precedence_fail;    // go if command fail
-	    }
+                if (status!=0 || !test_status==true || precedence_fail==true)    // go if command fail
+                    go = 1;
+                else
+                    go = 0;	    
+             }
+
 
             // clear precedence_fail flag after setting go flag
             precedence_fail = false;
-
 
             cmdIndex = connectorIndex +1;		//index of the start of next command
             for (int j=0; j < max_cmd_len; j++){
