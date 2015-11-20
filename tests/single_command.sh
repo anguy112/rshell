@@ -26,11 +26,15 @@ echo "rmdir test ;"
 
 echo "ls;"
 
+echo "ls -P"  #bad command
+
+echo "rmdir"  #bad command
+
 echo "pwb"  #bad command
 
 echo "pwd"
 
 echo "exit"
-) | ../bin/rshell
 
+) | ../bin/rshell
 
