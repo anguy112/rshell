@@ -362,11 +362,6 @@ void run_cmd(char ** command, char ** args){
             // clear open_parenthesis flag
             open_parenthesis = false;
 
-            // display command command array
-	    //for (unsigned k=0; command[k]!=NULL; k++)
-            //{
-            //    cout << " command " << command[k] << endl;
-            //} 
             
 	    // then execute the args array if go=1
             // the return status=0 means fail
